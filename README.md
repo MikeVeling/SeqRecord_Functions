@@ -81,7 +81,12 @@ identify_feature(SeqRecord_obj,
                  feature):
 ```
 finds a list of things that could be your feature. If you give it a string, it will find all features with that name. If you give it an individual feature, it will make sure that feature is in your SeqRecord_obj and return a list containing just that feature. If it is a list of feature objects already, it will just return that same list.
-
+```
+add_translation_to_feature(SeqRecord_obj,
+                           Feature_obj,
+                           supress_warnings=False):
+```
+Will add a translation to a feature object in a format understood by snapgene. Note this is not done in place, so make sure to add the feature back to your SeqRecord_obj
 ```
 add_feature(SeqRecord_obj,
             start,
@@ -152,6 +157,11 @@ replace_sequence_by_feature(SeqRecord_obj,
                             supress_warnings=False):
 ```
 Will take a target feature and replace all instances of that target feature with a new sequence. this is an abstraction of replace_sequence_by_locus.
+```
+translate_CDS(SeqRecord_obj,
+              supress_warnings=False):
+```
+Will iterate through a SeqRecord_obj to add translations to all the features with type "CDS"
 #Test
 After import, run the following code in a folder with the test_in.gbk file included in this repository to ensure that everything is processing correctly 
 ```
