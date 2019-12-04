@@ -239,7 +239,6 @@ def add_sequence(SeqRecord_obj,
                                    strand=strand,
                                    supress_warnings=supress_warnings)
     return SeqRecord_obj_ouptut
-
 ###############################################################################
 #                            Feature Functions                                #
 ###############################################################################
@@ -273,6 +272,42 @@ def identify_feature(SeqRecord_obj,
     else:
         raise Exception(feature+' can not be parsed into feature objects')
     return target_features
+
+def add_translation_to_feature(SeqRecord_obj,
+                               Feature_obj,
+                               supress_warnings=False):
+    '''
+    Will add a translation to a feature object in a format understood by 
+    snapgene. Note this is not done in place, so make sure to add the feature
+    back to your SeqRecord_obj
+    '''
+    Feature_obj_output=copy.deepcopy(Feature_obj)
+    feature_qualifiers=Feature_obj_output.qualifiers
+    if 'translation' not in feature_qualifiers:
+        start=int(Feature_obj_output.location.start)
+        end=int(Feature_obj_output.location.end)
+        assert end >= start
+        strand=Feature_obj_output.location.strand
+        if supress_warnings:
+            with warnings.catch_warnings():
+                if strand == 1:
+                    feature_qualifiers['translation']=str(
+                                      SeqRecord_obj[start:end].translate().seq)
+                elif strand == -1:
+                    feature_qualifiers['translation']=str(
+                 SeqRecord_obj[start:end].reverse_complement().translate().seq)
+                else:
+                    raise Exception('Strand not understood')
+        else:
+            if strand == 1:
+                feature_qualifiers['translation']=str(
+                                      SeqRecord_obj[start:end].translate().seq)
+            elif strand == -1:
+                feature_qualifiers['translation']=str(
+                 SeqRecord_obj[start:end].reverse_complement().translate().seq)
+            else:
+                raise Exception('Strand not understood')
+    return Feature_obj_output
 
 def add_feature(SeqRecord_obj,
                 start,
@@ -311,18 +346,15 @@ def add_feature(SeqRecord_obj,
     feature_qualifiers['note'].append('color: '+feature_color)
     feature_qualifiers['ApEinfo_fwdcolor'].append(feature_color)
     feature_qualifiers['ApEinfo_revcolor'].append(feature_color)
-    if feature_type == 'CDS':
-        if supress_warnings:
-            with warnings.catch_warnings():
-                feature_qualifiers['translation']=str(
-                                      SeqRecord_obj[start:end].translate().seq)
-        else:
-            feature_qualifiers['translation']=str(
-                                      SeqRecord_obj[start:end].translate().seq)
     new_feature=SeqFeature(location=FeatureLocation(start,end),
                            type=feature_type,
                            strand=strand,
                            qualifiers=feature_qualifiers)
+    if feature_type == 'CDS':
+        new_feature=add_translation_to_feature(SeqRecord_obj,
+                                               new_feature,
+                                               supress_warnings=(
+                                                             supress_warnings))
     SeqRecord_obj_output=copy.deepcopy(SeqRecord_obj)
     SeqRecord_obj_output.features.append(new_feature)
     return SeqRecord_obj_output
@@ -494,6 +526,22 @@ def replace_sequence_by_feature(SeqRecord_obj,
                                                  maintain_ambiguious_features),
                                                  supress_warnings=(
                                                              supress_warnings))
+    return SeqRecord_obj_output
+def translate_CDS(SeqRecord_obj,
+                  supress_warnings=False):
+    '''
+    Will iterate through a SeqRecord_obj to add translations to all the 
+    features with type "CDS"
+    '''
+    SeqRecord_obj_output=copy.deepcopy(SeqRecord_obj)
+    for feature in SeqRecord_obj_output.features:
+        if feature.type == 'CDS':
+            new_feature=add_translation_to_feature(SeqRecord_obj,
+                                                   feature,
+                                                   supress_warnings=(
+                                                             supress_warnings))
+            SeqRecord_obj_output.features.remove(feature)
+            SeqRecord_obj_output.features.append(new_feature)
     return SeqRecord_obj_output
 ###############################################################################
 #                           Tests the functions                               #
