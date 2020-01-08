@@ -1,5 +1,5 @@
 # SeqRecord-Functions
-This repository contains my own functions built on top of the Biopython SeqRecord objects. These functions allow for easy manipulation of these objects within python. These objects can be easily imported and exported from the standard GenBank file format for annotated sequences. This format is widely used by synthetic biologists for gene design and manipulation and integrates nicely into standard visualization tools like SnapGene and Benchling.
+This repository contains my own functions built on top of the Biopython SeqRecord objects. These functions allow for easy manipulation of these objects within python. These objects can be easily imported and exported from the standard GenBank file format for annotated sequences. This format is widely used by biologists for gene design and manipulation and integrates nicely into standard visualization tools like SnapGene and Benchling.
 
 **Note**: These functions do not consider things like cloning workflow. If you want tools to generate cloning workflows, please check out [pydna](https://github.com/BjornFJohansson/pydna)
 
